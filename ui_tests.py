@@ -2,9 +2,20 @@
 # pip install selenium
 import time
 import unittest
+import os
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service as ChromeService
+
+# Screenshot helper
+def take_screenshot(driver, name):
+    timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    folder = "screenshots"
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    path = os.path.join(folder, f"{name}_{timestamp}.png")
+    driver.save_screenshot(path)
 
 class WasteTrackerUITest(unittest.TestCase):
     @classmethod
@@ -30,6 +41,9 @@ class WasteTrackerUITest(unittest.TestCase):
         self.assertTrue(error_msg.is_displayed(), "Error message should be visible for invalid login")
         self.assertIn("Invalid username or password", error_msg.text)
 
+        # Screenshot on failed login
+        take_screenshot(driver, "login_failed")
+
     def test_2_login_and_crud_flow(self):
         driver = self.driver
         driver.get("http://localhost:3000")
@@ -42,6 +56,9 @@ class WasteTrackerUITest(unittest.TestCase):
         save_button = driver.find_element(By.ID, "saveButton")
         self.assertTrue(save_button.is_displayed(), "Save button should be displayed on dashboard after login")
 
+        # Screenshot after successful login
+        take_screenshot(driver, "login_success")
+
         driver.find_element(By.ID, "descriptionInput").send_keys("Test Waste Item")
         driver.find_element(By.ID, "weightInput").send_keys("123")
         save_button.click()
@@ -49,6 +66,9 @@ class WasteTrackerUITest(unittest.TestCase):
         page_text = driver.page_source
         self.assertIn("Test Waste Item", page_text)
         self.assertIn("123", page_text)
+
+        # Screenshot after creating a pickup
+        take_screenshot(driver, "pickup_created")
 
         edit_buttons = driver.find_elements(By.CLASS_NAME, "editBtn")
         self.assertTrue(len(edit_buttons) > 0, "At least one Edit button should exist")
@@ -58,11 +78,13 @@ class WasteTrackerUITest(unittest.TestCase):
         desc_input.clear()
         desc_input.send_keys("Updated Waste Item")
         driver.find_element(By.ID, "saveButton").click()
-
         time.sleep(1)
         page_text = driver.page_source
         self.assertIn("Updated Waste Item", page_text)
         self.assertNotIn("Test Waste Item", page_text)
+
+        # Screenshot after editing a pickup
+        take_screenshot(driver, "pickup_edited")
 
         delete_buttons = driver.find_elements(By.CLASS_NAME, "deleteBtn")
         self.assertTrue(len(delete_buttons) > 0, "At least one Delete button should exist")
@@ -71,6 +93,9 @@ class WasteTrackerUITest(unittest.TestCase):
         page_text = driver.page_source
         self.assertNotIn("Updated Waste Item", page_text)
         self.assertIn("No pickups available", page_text)
+
+        # Screenshot after deleting a pickup
+        take_screenshot(driver, "pickup_deleted")
 
 if __name__ == "__main__":
     unittest.main()

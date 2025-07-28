@@ -1,0 +1,14 @@
+# Node
+frontend/node_modules/
+backend/node_modules/
+backend/coverage/
+
+# Python
+.venv/
+
+# Selenium screenshots (remove this if you WANT to push them)
+screenshots/
+
+# OS / misc
+.DS_Store
+Thumbs.db
